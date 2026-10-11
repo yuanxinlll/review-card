@@ -1,14 +1,162 @@
 # review-card
 
+[English](#english) | [中文](#中文)
+
+## English
+
+Turn pasted articles or local TXT / Markdown files into knowledge cards for learning and review.
+
+### What problem does this solve?
+
+Useful ideas in an article can be scattered or repeated, making the full text difficult to review. review-card guides an AI assistant to extract the key ideas, merge duplicates, and create cards that can be reviewed individually. It avoids splitting one idea into several cards or inventing content to meet a target count.
+
+This project is a Skill instruction package. Its entry point is [review-card/SKILL.md](review-card/SKILL.md). It requires an AI assistant that can read the instructions and generate text. Local files also require the assistant to have permission to read them. The instructions are currently written in Chinese; card output defaults to the user's language.
+
+### Features
+
+- **Flexible input**: Pasted text or accessible `.txt`, `.md`, and `.markdown` files. Multiple sources can be combined and deduplicated.
+- **One key idea per card**: Each card includes a title, core knowledge, a brief explanation, an example, and a source reference.
+- **Count based on available knowledge**: Usually 5–10 cards. Fewer than 5 independent ideas produce fewer cards; more than 10 are narrowed to 10 with an explanation of the selection. No extractable ideas means no cards.
+- **Grounded in the source**: Preserves conditions, attribution, uncertainty, and conflicting statements. No outside knowledge is added to fill the count.
+- **Careful examples**: Uses examples from the source first. Illustrations based only on the source must be labeled; when no suitable example is available, the card states that none was provided and none is invented.
+- **Traceable Markdown output**: Uses the user's language by default and cites filenames, sections, or paragraphs for checking the source.
+
+The skill does not perform external fact-checking. This project does not include web scraping, PDF/Word parsing, a graphical interface, automatic export tools, or a standalone executable.
+
+### Installation
+
+No project dependencies, scripts, or API keys are needed for the skill itself. Your AI assistant's setup, account, and model configuration are provided by its host environment.
+
+#### Option 1: Use directly from this project
+
+1. Download or copy the project locally. Skip this step if you already have it.
+2. Open the project in an AI assistant that can access its files, or provide an accessible path to `review-card/SKILL.md`.
+3. Ask the assistant to read that file before processing your article, as shown below.
+
+This option does not require registering the skill.
+
+#### Option 2: Install in an assistant that supports Skills
+
+1. Find the skill installation directory documented by your assistant.
+2. Copy the entire `review-card` folder into it. Preserve this structure; do not rename `SKILL.md` or copy only its text:
+
+   ```text
+   <your assistant's skill directory>/
+   └── review-card/
+       └── SKILL.md
+   ```
+
+3. Follow your assistant's instructions to reload or discover skills, and confirm that `review-card` is recognized.
+4. If the environment supports `$skill-name` invocation, use `$review-card`. Otherwise, use its documented invocation method.
+
+The host assistant determines the installation directory and loading method. This project has no automatic installer. The root README, LICENSE, and tests do not need to be copied into the skill directory.
+
+### Usage
+
+**Paste an article**: Ask the assistant to read the entry point and process your text.
+
+```text
+Read review-card/SKILL.md and follow its rules to turn the article below into knowledge cards:
+…paste your article…
+```
+
+**Use a file**: Upload a TXT / Markdown file or provide an accessible local path. Replace the example path with your own.
+
+```text
+Read review-card/SKILL.md and turn articles/article.md into knowledge cards.
+```
+
+**Invoke an installed skill** in an environment that supports this syntax:
+
+```text
+$review-card
+Turn the following article into knowledge cards:
+…paste your article…
+```
+
+By default, cards are returned as Markdown in the conversation. If a file cannot be read, decoded, or read in full, the assistant should explain the limitation and request readable text rather than infer content from the filename.
+
+### Input and output examples
+
+#### Example 1: A short article does not require five cards
+
+Input:
+
+> Active recall means trying to answer a question from memory without looking at the material first. For example, after reading a passage, close the book and write down its main points.
+
+Output:
+
+The material contains only one independent idea, so one card is generated.
+
+##### Card 1: Active recall
+
+- **Core knowledge**: Try to answer a question from memory without looking at the material first.
+- **Brief explanation**: When reviewing, answer from memory before consulting the original text.
+- **Example**: After reading a passage, close the book and write down its main points.
+- **Source**: Pasted text, paragraph 1.
+
+The skill does not split the same idea into multiple cards or add knowledge to reach a target count. If the source has no example, any illustration must be explicitly labeled and based entirely on the source; otherwise, the example field states that none was provided and none is invented. Attribution and uncertainty are preserved. Cards do not imply that external fact-checking has been performed.
+
+#### Example 2: Deduplicate a TXT file without inventing an example
+
+Input file `export.txt`:
+
+```text
+To export records, open “Records”, choose “Export”, and save the file.
+
+Exporting records requires opening “Records” first, then choosing “Export”, and finally saving the file.
+```
+
+Output:
+
+After deduplication, the material contains only one independent idea, so one card is generated.
+
+##### Card 1: How to export records
+
+- **Core knowledge**: Export records by opening “Records”, choosing “Export”, and saving the file in that order.
+- **Brief explanation**: The three steps form a single export procedure and should follow the source's order.
+- **Example**: The source provides no example; none is invented.
+- **Source**: export.txt, paragraphs 1 and 2.
+
+#### Example 3: No extractable knowledge
+
+Input:
+
+> Keep going! The future is bright! Keep going!
+
+Output:
+
+> The material contains no sufficient extractable knowledge. It consists only of slogans and repetition, so no cards are generated.
+
+### Local validation
+
+[tests/behavioral-cases.md](tests/behavioral-cases.md) contains inputs, generated outputs, and review results for several types of material. These are behavioral self-tests for checking content constraints, not independent blind tests or automated quality guarantees. The test records and fixtures are currently in Chinese.
+
+If your environment includes the skill-creator validator, run the following from the project root. Set `REVIEW_CARD_VALIDATOR` to the validator's actual path. Validation requires Python and PyYAML; normal use of the skill does not require these validation dependencies.
+
+```bash
+python3 "${REVIEW_CARD_VALIDATOR}" ./review-card
+```
+
+The validator checks skill structure and metadata. Card quality requires reviewing behavioral test results. This project includes no additional scripts.
+
+### License
+
+Licensed under the [MIT License](LICENSE).
+
+---
+
+## 中文
+
 把粘贴的文章或本地 TXT / Markdown 文件整理为知识卡片，便于学习和复习。
 
-## 项目解决什么问题
+### 项目解决什么问题
 
 文章中的知识点往往分散、重复，直接拿全文复习不容易抓住重点。review-card 指导 AI 助手提炼原文、合并重复观点，并整理成可独立复习的卡片，避免把一个观点拆成多张卡片或为了数量补造内容。
 
-本项目是 Skill 指令包，入口为 [review-card/SKILL.md](review-card/SKILL.md)。处理文章需要能够读取指令并生成文本的 AI 助手；处理本地文件还需要助手具有对应文件的读取权限。
+本项目是 Skill 指令包，入口为 [review-card/SKILL.md](review-card/SKILL.md)。处理文章需要能够读取指令并生成文本的 AI 助手；处理本地文件还需要助手具有对应文件的读取权限。技能指令目前使用中文编写，卡片默认使用用户的语言输出。
 
-## 主要功能
+### 主要功能
 
 - **支持多种输入**：粘贴正文，或助手可读取的 `.txt`、`.md`、`.markdown` 文件；多份材料可合并去重。
 - **生成知识卡片**：每张只有一个重要知识点，包含标题、核心知识、简明知识讲解、例子和来源。
@@ -19,11 +167,11 @@
 
 卡片整理不包含外部事实核验。本项目没有网页抓取、PDF/Word 解析、图形界面或自动导出工具，也不附带可独立执行的程序。
 
-## 安装方法
+### 安装方法
 
 无需安装项目依赖、运行脚本或为本技能配置 API 密钥。AI 助手本身的安装、账户和模型配置由所用环境提供。
 
-### 方式一：直接在项目中使用
+#### 方式一：直接在项目中使用
 
 1. 下载或复制本项目到本地；已有本项目时跳过此步。
 2. 在能够访问项目文件的 AI 助手中打开项目，或提供 `review-card/SKILL.md` 的可访问路径。
@@ -31,7 +179,7 @@
 
 这种方式不需要注册技能，适合当前项目的本地使用。
 
-### 方式二：安装到支持 Skill 的助手
+#### 方式二：安装到支持 Skill 的助手
 
 1. 根据所用助手的说明，找到它实际支持的技能安装目录。
 2. 将整个 `review-card` 文件夹复制进去，保留以下结构，不要只复制正文或把 `SKILL.md` 重命名：
@@ -47,7 +195,7 @@
 
 技能目录与加载方式由宿主助手决定，本项目不提供自动安装器。项目根目录中的 README、LICENSE 和 tests 不需要放入技能目录。
 
-## 使用方法
+### 使用方法
 
 **粘贴文章**：在项目中让助手读取技能入口，再处理正文。
 
@@ -72,9 +220,9 @@ $review-card
 
 默认在对话中返回 Markdown 卡片。若文件无法读取、解码或未能完整读取，助手应说明限制并请求可读正文，不根据文件名猜测内容。
 
-## 输入与输出示例
+### 输入与输出示例
 
-### 示例一：短文不强行凑数
+#### 示例一：短文不强行凑数
 
 输入正文：
 
@@ -84,7 +232,7 @@ $review-card
 
 材料只有 1 个独立知识点，因此生成 1 张卡片。
 
-### 卡片 1：主动回忆
+##### 卡片 1：主动回忆
 
 - **核心知识**：先不看材料，尝试从记忆中回答问题。
 - **简明知识讲解**：复习时先凭记忆作答，而不是直接查看原文。
@@ -93,7 +241,7 @@ $review-card
 
 不重复拆分同一观点，不为凑数补充知识。原文无例子时只允许明确标注、完全依据原文的示意；否则写“原文未提供例子，不补造”。作者观点和不确定结论保留归属与限定，卡片不代表已完成事实核验。
 
-### 示例二：TXT 文件去重且不补造例子
+#### 示例二：TXT 文件去重且不补造例子
 
 输入文件 `export.txt`，内容为：
 
@@ -107,14 +255,14 @@ $review-card
 
 材料去重后只有 1 个独立知识点，因此生成 1 张卡片。
 
-### 卡片 1：导出记录的方法
+##### 卡片 1：导出记录的方法
 
 - **核心知识**：导出记录需要依次打开“记录”、选择“导出”、保存文件。
 - **简明知识讲解**：三个步骤共同完成一次导出，应按原文顺序执行。
 - **例子**：原文未提供例子，不补造。
 - **来源**：export.txt，第 1、2 段。
 
-### 示例三：没有可提取知识点
+#### 示例三：没有可提取知识点
 
 输入：
 
@@ -124,9 +272,9 @@ $review-card
 
 > 材料中没有足够的可提取知识点。正文只有口号及重复内容，未生成卡片。
 
-## 本地验证
+### 本地验证
 
-[tests/behavioral-cases.md](tests/behavioral-cases.md) 保存不同类型材料的人工行为测试输入、实际输出及检查结果。这些测试用于复查内容约束，不是独立模型盲测或自动化质量保证。
+[tests/behavioral-cases.md](tests/behavioral-cases.md) 保存不同类型材料的人工行为测试输入、实际输出及检查结果。这些测试用于复查内容约束，不是独立模型盲测或自动化质量保证。测试记录和输入样本目前使用中文。
 
 若环境中已有 skill-creator 验证器，可在项目根目录运行以下命令；将环境变量 `REVIEW_CARD_VALIDATOR` 设置为验证器的实际路径。它需要可用的 Python 和 PyYAML，但日常使用本技能不需要这些验证依赖。
 
@@ -136,6 +284,6 @@ python3 "${REVIEW_CARD_VALIDATOR}" ./review-card
 
 验证器检查技能结构和元数据；卡片质量需结合行为测试检查。本项目不附带额外脚本。
 
-## 开源许可
+### 开源许可
 
 采用 [MIT License](LICENSE)。
