@@ -1,0 +1,13 @@
+# macOS folder metadata
+.DS_Store
+._*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Temporary and editor backup files
+*.tmp
+*.swp
+*.swo
+*~
